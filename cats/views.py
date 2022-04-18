@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, filters
 from rest_framework.throttling import ScopedRateThrottle
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -27,8 +27,18 @@ class CatViewSet(viewsets.ModelViewSet):
 
     pagination_class = CatsPagination  # None
 
-    filter_backebds = (DjangoFilterBackend,)
+    filter_backends = (
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter
+    )
     filters_fields = ('color', 'birth_year')
+    # Поиск по связанным моделям:
+    # "ForeignKey текущей модели"__"имя поля в связанной модели".
+    search_fields = ('name', 'achievements__name', 'owner__username')
+    ordering_fields = ('name', 'birth_year')  # '__all__'
+    # сортировка по умолчанию
+    ordering = ('birth_year',)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
